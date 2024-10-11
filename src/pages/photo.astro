@@ -1,0 +1,150 @@
+---
+import Button from 'fulldev-ui/components/Button.astro';
+import Heading from 'fulldev-ui/components/Heading.astro';
+
+import Layout from "../layouts/Layout.astro";
+import { getCldImageUrl } from 'astro-cloudinary/helpers'
+
+const { searchParams } = Astro.url
+const id = searchParams.get('id')
+
+if(id === null) return Astro.redirect('/')
+
+const url = getCldImageUrl({ src: id})
+---
+
+<Layout title="Cloudinary Photo">
+  <main data-id={id}>
+    <header>
+      <Heading color="brand" contrast={false}>
+        Selecciona un tema
+      </Heading>
+      <Button
+        as="button"
+        class="add"
+        color="brand"
+        data-topic="ghost"
+        icon="ghost"
+      >
+        Añade fantasmas
+      </Button>
+      <Button
+        as="button"
+        class="add"
+        color="brand"
+        data-topic="zombies"
+        icon="grave-2"
+      >
+        Añade Zombies
+      </Button>
+      <Button
+        as="button"
+        class="add"
+        color="brand"
+        data-topic="devil"
+        icon="pentagram"
+      >
+        Añade diablos
+      </Button>
+      <Button
+        as="button"
+        class="add"
+        color="brand"
+        data-topic="witch"
+        icon="hat-wizard"
+      >
+        Añade Brujas
+      </Button>
+      <Button
+        as="button"
+        class="add"
+        color="brand"
+        data-topic="vampire"
+        icon="vampire"
+      >
+        Añade Vampiros
+      </Button>
+    </header>
+    <two-up>
+      <img id="original" src={url}/>
+      <img id="preview" src={url}/>
+    </two-up>
+    <small>{url}</small>
+    <div>
+      <Button
+        as="button"
+        class="download"
+        color="brand"
+        icon="download"
+      >
+        Descargar
+      </Button>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+		width: 800px;
+		margin: 0 auto;
+		padding-top: 100px;
+		text-align: center;
+		padding-bottom: 10px;
+	}
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    transition: opacity .3s ease;
+  }
+  two-up {
+    display: inline-grid;
+  }
+</style>
+
+<script>
+  import { getCldImageUrl } from "astro-cloudinary/helpers"
+  import "two-up-element"
+
+  const id = document.querySelector('main')?.getAttribute('data-id') ?? ''
+  const preview = document.getElementById('preview') as HTMLImageElement
+  const buttons = document.querySelectorAll('button')
+  const downloadButton = document.querySelector('.download') as HTMLButtonElement
+
+  const TOPICS: Record<string, string> = {
+    ghost: 'Add scary ghost to the background',
+    zombies: 'Add zombies to the background',
+    devil: 'Add devils to the background',
+    witch: 'Add witches to the background',
+    vampire: 'Add vampires to the background',
+    custom: ''
+  } as const
+
+  buttons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const topic = button.getAttribute('data-topic')
+      if(topic === null) return
+
+      const url = getCldImageUrl({
+        src: id,
+        replaceBackground: TOPICS[topic]
+      })
+
+      preview.style.opacity = '.3'
+
+      preview.src = url
+      preview.onload = () => {
+        preview.style.opacity = '1'
+      }
+    })
+  })
+
+  downloadButton.addEventListener('click', () => {
+    const urlPreview = preview.src
+
+    const a = document.createElement('a')
+    a.href = urlPreview
+    a.download = 'photo.webp'
+    a.click()
+  })
+</script>
